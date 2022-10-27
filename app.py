@@ -10,6 +10,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://knonbgucbylgdb:91620f58ea0
 
 # Initialise the db
 db = SQLAlchemy(app)
+# heroku pg:psql
 
 # Create Student model
 class Student(db.Model):
