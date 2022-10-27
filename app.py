@@ -15,8 +15,8 @@ class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(50), nullable=False)
-    user_name = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(50), unique=True, nullable=False)
+    user_name = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(20), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -39,11 +39,18 @@ def my_profile():
 
 @app.route('/testdb')
 def testdb():
-    user_table = User.query.all()
-    # for url in table:
-    #     print(url.url)
-    # table = "test"
-    return user_table
+    # create random instance of User class
+    new_user = User(full_name="karl", user_name="karldudley", email="karl@example.com", password="test123")
+
+    # store random string and url in db
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        # user_table = User.query.all()
+        # return user_table
+    except:
+        return "There was an error adding to the db"
+    
 
 if __name__ == '__main__':
     app.run(debug = True)   # pragma: no cover
