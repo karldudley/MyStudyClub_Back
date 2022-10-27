@@ -46,6 +46,7 @@ def testdb():
     try:
         db.session.add(new_user)
         db.session.commit()
+        return "Correctly added to db"
         # user_table = User.query.all()
         # return user_table
     except:
