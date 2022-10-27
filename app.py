@@ -16,6 +16,8 @@ db = SQLAlchemy(app)
 # heroku pg:reset DATABASE to reset db
 # heroku restart to reset server
 
+# Create One to Many relationships and classes for Set, Message and FlashCard
+
 
 # join table for many to many
 student_club = db.Table('student_club',
@@ -84,6 +86,7 @@ def testdb():
         except:
             return "There was an error adding to the db"
     else:
+        # below is just for testing purposes
         students = Student.query.order_by(Student.created_at)
         clubs = Club.query.order_by(Club.created_at)
         for x in students:
