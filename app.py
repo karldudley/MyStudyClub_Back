@@ -64,7 +64,7 @@ class Set(db.Model):
     likes = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     club_id = db.Column(db.Integer, db.ForeignKey('club.id')) # link set to club
-    messages = db.relationship('Message', backref='set')  # setup foreign key for flashcards
+    flashcards = db.relationship('Flashcard', backref='set')  # setup foreign key for flashcards
     # flashcard_id foreign key
 
     #create a function to return a string when we add something
