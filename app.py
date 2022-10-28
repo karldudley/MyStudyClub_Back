@@ -47,12 +47,55 @@ class Club(db.Model):
     club_name = db.Column(db.String(50), nullable=False)
     club_code = db.Column(db.String(20), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    # set_id foreign key
+    sets = db.relationship('Set', backref='club')  # setup foreign key for sets
+    messages = db.relationship('Message', backref='club')  # setup foreign key for messages
     # message_id foreign key
 
     #create a function to return a string when we add something
     def __repr__(self):
         return '<Club %r>' % self.club_name
+
+# Create Set model
+class Set(db.Model):
+    __tablename__ = 'set'
+    id = db.Column(db.Integer, primary_key=True)
+    set_name = db.Column(db.String(50), nullable=False)
+    private = db.Column(db.Boolean, nullable=False)
+    likes = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    club_id = db.Column(db.Integer, db.ForeignKey('club.id')) # link set to club
+    messages = db.relationship('Message', backref='set')  # setup foreign key for flashcards
+    # flashcard_id foreign key
+
+    #create a function to return a string when we add something
+    def __repr__(self):
+        return '<Set %r>' % self.set_name
+
+# Create Flashcard model
+class Flashcard(db.Model):
+    __tablename__ = 'flashcard'
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(255), nullable=False)
+    answer = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    set_id = db.Column(db.Integer, db.ForeignKey('set.id')) # link flashcard to set
+
+    #create a function to return a string when we add something
+    def __repr__(self):
+        return '<Flashcard %r>' % self.question[:20]
+
+# Create Message model
+class Message(db.Model):
+    __tablename__ = 'message'
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, nullable=False) # link this to User?
+    club_id = db.Column(db.Integer, db.ForeignKey('club.id')) # link message to club
+
+    #create a function to return a string when we add something
+    def __repr__(self):
+        return '<Flashcard %r>' % self.content[:20]
 
 @app.route('/')
 def index():
