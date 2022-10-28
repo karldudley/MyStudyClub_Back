@@ -169,9 +169,9 @@ def index():
     "<h3>/students</h3>"
     "<h3>/flashcards</h3>"
     "<h2 style=\"color:#468499;\">The following PATCH endpoints currently exist:</h2>"
-    "<h3>/flashcards/:set_id</h3>"
+    "<h3>/flashcards/:id</h3>"
     "<h2 style=\"color:#468499;\">The following DELETE endpoints currently exist:</h2>"
-    "<h3>/flashcards/:set_id</h3>"
+    "<h3>/flashcards/:id</h3>"
     )
 
 @app.route('/studentclubs')
