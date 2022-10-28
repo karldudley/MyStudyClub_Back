@@ -146,7 +146,7 @@ messages_schema = MessageSchema(many=True)
 
 @app.route('/')
 def index():
-    return "Welcome to the myStudyClub Server!"
+    return "<h1 style=\"color:#D81159;\">Welcome to the myStudyClub server</h1><h2>The following GET endpoints currently exist:</h2><h3>/students</h3><h3>/students/:id</h3><h3>/clubs</h3><h3>/clubs/:id</h3><h3>/studentclubs</h3><h3>/studentclubs/:id</h3><h3>/sets</h3><h3>/sets/:id</h3><h3>/messages</h3><h3>/messages/:id</h3><h3>/flashcards</h3><h3>/flashcards/:id</h3>"
 
 @app.route('/studentclubs')
 def studentclubs():
