@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, request, json
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -54,6 +54,12 @@ class Student(db.Model):
     password = db.Column(db.String(20), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     clubs = db.relationship('Club', secondary=student_club, backref='students')
+
+    def __init__(self, full_name, user_name, email, password):
+        self.full_name = full_name
+        self.user_name = user_name
+        self.email = email
+        self.password = password
 
     #create a function to return a string when we add something
     def __repr__(self):
@@ -115,6 +121,11 @@ class Flashcard(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     set_id = db.Column(db.Integer, db.ForeignKey('set.id')) # link flashcard to set
 
+    def __init__(self, question, answer, set_id):
+        self.question = question
+        self.answer = answer
+        self.set_id = set_id
+
     #create a function to return a string when we add something
     def __repr__(self):
         return '<Flashcard %r>' % self.question[:20]
@@ -146,7 +157,22 @@ messages_schema = MessageSchema(many=True)
 
 @app.route('/')
 def index():
-    return "<h1 style=\"color:#D81159;\">Welcome to the myStudyClub server</h1><h2>The following GET endpoints currently exist:</h2><h3>/students</h3><h3>/students/:id</h3><h3>/clubs</h3><h3>/clubs/:id</h3><h3>/studentclubs</h3><h3>/studentclubs/:id</h3><h3>/sets</h3><h3>/sets/:id</h3><h3>/messages</h3><h3>/messages/:id</h3><h3>/flashcards</h3><h3>/flashcards/:set_id</h3>"
+    return ("<h1 style=\"color:#B0E0E6;\">Welcome to the myStudyClub server</h1>"
+    "<h2 style=\"color:#468499;\">The following GET endpoints currently exist:</h2>"
+    "<h3>/students</h3><h3>/students/:id</h3>"
+    "<h3>/clubs</h3><h3>/clubs/:id</h3>"
+    "<h3>/studentclubs</h3><h3>/studentclubs/:id</h3>"
+    "<h3>/sets</h3><h3>/sets/:id</h3>"
+    "<h3>/messages</h3><h3>/messages/:id</h3>"
+    "<h3>/flashcards</h3><h3>/flashcards/:set_id</h3>"
+    "<h2 style=\"color:#468499;\">The following POST endpoints currently exist:</h2>"
+    "<h3>/students</h3>"
+    "<h3>/flashcards</h3>"
+    "<h2 style=\"color:#468499;\">The following PATCH endpoints currently exist:</h2>"
+    "<h3>/flashcards/:set_id</h3>"
+    "<h2 style=\"color:#468499;\">The following DELETE endpoints currently exist:</h2>"
+    "<h3>/flashcards/:set_id</h3>"
+    )
 
 @app.route('/studentclubs')
 def studentclubs():
@@ -160,11 +186,21 @@ def studentclub(id):
     rows = cursor.fetchall()
     return rows, 200
 
-@app.route('/students')
+@app.route('/students', methods=["POST", "GET"])
 def students():
-    data = Student.query.all()
-    res = students_schema.dump(data)
-    return jsonify(res), 200
+    if request.method == "POST":
+        full_name = request.json['full_name']
+        user_name = request.json['user_name']
+        email = request.json['email']
+        password = request.json['password']
+        new_student = Student(full_name, user_name, email, password)
+        db.session.add(new_student)
+        db.session.commit()
+        return student_schema.jsonify(new_student), 201
+    else:
+        data = Student.query.all()
+        res = students_schema.dump(data)
+        return jsonify(res), 200
 
 @app.route('/students/<id>')
 def student(id):
@@ -196,23 +232,35 @@ def set(id):
     res = set_schema.dump(data)
     return res, 200
 
-@app.route('/flashcards')
+@app.route('/flashcards', methods=["GET", "POST"])
 def flashcards():
-    data = Flashcard.query.all()
-    res = flashcards_schema.dump(data)
-    return jsonify(res), 200
+    if request.method == "POST":
+        question = request.json['question']
+        answer = request.json['answer']
+        set_id = request.json['set_id']
+        new_flashcard = Flashcard(question, answer, set_id)
+        db.session.add(new_flashcard)
+        db.session.commit()
+        return flashcard_schema.jsonify(new_flashcard), 201
+    else:
+        data = Flashcard.query.all()
+        res = flashcards_schema.dump(data)
+        return jsonify(res), 200
 
-# @app.route('/flashcards/<id>')
-# def flashcard(id):
-#     data = Flashcard.query.get(id)
-#     res = flashcard_schema.dump(data)
-#     return res, 200
-
-@app.route('/flashcards/<set_id>')
-def flashcard_set(set_id):
-    data = Flashcard.query.filter_by(set_id=set_id)
-    res = flashcards_schema.dump(data)
-    return jsonify(res), 200
+@app.route('/flashcards/<id>', methods=["GET", "PATCH", "DELETE"])
+def update_flashcard(id):
+    if request.method == "PATCH":
+        db.session.query(Flashcard).filter(Flashcard.id == id).update(request.json)
+        db.session.commit()
+        return request.json, 200
+    elif request.method == "DELETE":
+        db.session.query(Flashcard).filter(Flashcard.id == id).delete()
+        db.session.commit()
+        return f"Successfully delete flashcard with the id {id}."
+    else:
+        data = Flashcard.query.filter_by(set_id=id)
+        res = flashcards_schema.dump(data)
+        return jsonify(res), 200
 
 @app.route('/messages')
 def messages():
