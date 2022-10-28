@@ -152,7 +152,7 @@ def index():
 def studentclubs():
     cursor.execute("SELECT * FROM student_club;")
     rows = cursor.fetchall()
-    return rows, 200
+    return jsonify(rows), 200
 
 @app.route('/studentclubs/<id>')
 def studentclub(id):
@@ -202,11 +202,18 @@ def flashcards():
     res = flashcards_schema.dump(data)
     return jsonify(res), 200
 
-@app.route('/flashcards/<id>')
-def flashcard(id):
-    data = Flashcard.query.get(id)
-    res = flashcard_schema.dump(data)
-    return res, 200
+# @app.route('/flashcards/<id>')
+# def flashcard(id):
+#     data = Flashcard.query.get(id)
+#     res = flashcard_schema.dump(data)
+#     return res, 200
+
+@app.route('/flashcards/<set_id>')
+def flashcard_set(set_id):
+    data = Flashcard.query.filter_by(set_id=set_id)
+    res = flashcards_schema.dump(data)
+    return jsonify(res), 200
+
 
 @app.route('/messages')
 def messages():
