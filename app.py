@@ -1,7 +1,9 @@
-from urllib import request
-from flask import Flask
+import json
+from os import access
+from tkinter.messagebox import RETRY
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
 
 app = Flask(__name__)
@@ -14,8 +16,9 @@ db = SQLAlchemy(app)
 
 #Config JWT secret key
 app.config['JWT_SECRET_KEY'] = 'Remember to change me'
+#specifies token lifespan
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=3)
 jwt = JWTManager(app)
-
 
 # Create user model
 class User(db.Model):
@@ -35,20 +38,45 @@ class User(db.Model):
 def index():
     return "Welcome to the myStudyClub Server!"
 
+#The function below is to guarantee token won't expire when user is logged in.The function takes as an argument, the response from the /profile API call.
+@app.after_request #Ensures that the refresh_expiring_jts runs after a request has been made to the protected PROFILE endpoint
+def refresh_expiring_jwts(response):
+	try:
+		exp_timestamp = get_jwt()["exp"] #current timestamp for user
+		now = datetime.now(timezone.utc)
+		target_timestamp = datetime.timestamp(now + timedelta(minutes=30)) #30 minutes away
+		if target_timestamp > exp_timestamp:
+			access_token = create_access_token(identity=get_jwt_identity)
+			data = response.get_json()
+			if type(data) is dict:
+				data["access_token"] = access_token
+				response.data=json.dumps(data)
+		return response
+	except (RuntimeError, KeyError):
+		# Case where there is not a valid JWT. Just return the original response
+		return response
+
+
 @app.route('/token', methods=['POST'])
 def create_token():
 	email = request.json.get('email', None)
 	password = request.json.get('password', None)
-	#Change this later to compare with database
+	#Change this later => compare with database user
 	if email != 'test' or password != 'test':
-		return{'msg': 'wrong email or password'}, 401
-	
+		return{'message': 'Wrong email or password'}, 401 #unauthorized Error
+	#create access token for particular email if login is confirmed
 	access_token = create_access_token(identity=email)
 	response = {'access_token': access_token}
-	return response
+	return response, 200
 
+@app.route('/logout', methods=['POST'])
+def logout():
+	response = jsonify({"message": "logout successful"})
+	unset_jwt_cookies(response)
+	return response, 200
 
 @app.route('/profile')
+@jwt_required() #prevent unauthenticated users from making requests to the API
 def my_profile():
     response_body = {
         "name": "Karlos",
