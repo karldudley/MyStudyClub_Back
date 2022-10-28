@@ -10,6 +10,9 @@ pytest-cov = "*"
 flask-sqlalchemy = "*"
 psycopg2 = "*"
 gunicorn = "*"
+flask-cors = "*"
+flask-marshmallow = "*"
+marshmallow-sqlalchemy = "*"
 
 [dev-packages]
 
