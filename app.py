@@ -11,13 +11,10 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://lkounzrgikkdge:10b8b7b4da003cc528748ffd5dbcbe9987af8f7526a5a766be2a77ad097c194d@ec2-52-23-131-232.compute-1.amazonaws.com:5432/d8lp0toh40kf2b' # heroku postgres db
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialise the db
-db = SQLAlchemy(app)
+db = SQLAlchemy(app) # Initialise the db
 
-#Config JWT secret key
-app.config['JWT_SECRET_KEY'] = 'Remember to change me'
-#specifies token lifespan
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=3)
+app.config['JWT_SECRET_KEY'] = 'Remember to change me' #Config JWT secret key
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=3) #specifies token lifespan
 jwt = JWTManager(app)
 
 # Create user model
@@ -56,12 +53,11 @@ def refresh_expiring_jwts(response):
 		# Case where there is not a valid JWT. Just return the original response
 		return response
 
-
 @app.route('/token', methods=['POST'])
 def create_token():
 	email = request.json.get('email', None)
 	password = request.json.get('password', None)
-	#Change this later => compare with database user
+	#Change this later => compare with database user details
 	if email != 'test' or password != 'test':
 		return{'message': 'Wrong email or password'}, 401 #unauthorized Error
 	#create access token for particular email if login is confirmed
