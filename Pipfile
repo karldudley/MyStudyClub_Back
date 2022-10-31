@@ -13,6 +13,7 @@ gunicorn = "*"
 flask-cors = "*"
 flask-marshmallow = "*"
 marshmallow-sqlalchemy = "*"
+flask-jwt-extended = "*"
 
 [dev-packages]
 

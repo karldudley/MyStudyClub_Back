@@ -1,7 +1,10 @@
+from os import access
+from tkinter.messagebox import RETRY
+from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
 from flask import Flask, request, jsonify, request, json
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import psycopg2
 from flask_marshmallow import Marshmallow
 
@@ -17,6 +20,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
+app.config['JWT_SECRET_KEY'] = 'Remember to change me'  # Config JWT secret key
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(
+    hours=3)  # specifies token lifespan
+jwt = JWTManager(app)
+
 conn = psycopg2.connect(database="d57frogopfmo03",
                         host="ec2-44-209-24-62.compute-1.amazonaws.com",
                         user="knonbgucbylgdb",
@@ -30,7 +38,6 @@ cursor = conn.cursor()
 # heroku restart to reset server
 
 # Create One to Many relationships and classes for Set, Message and FlashCard
-
 
 # join table for many to many
 student_club = db.Table('student_club',
@@ -274,7 +281,52 @@ def message(id):
     res = message_schema.dump(data)
     return res, 200
 
+# The function below is to guarantee token won't expire when user is logged in.The function takes as an argument, the response from the /profile API call.
+
+@app.after_request  # Ensures that the refresh_expiring_jts runs after a request has been made to the protected PROFILE endpoint
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]  # current timestamp for user
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(
+            now + timedelta(minutes=30))  # 30 minutes away
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity)
+            data = response.get_json()
+            if type(data) is dict:
+                data["access_token"] = access_token
+                response.data = json.dumps(data)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original response
+        return response
+
+
+@app.route('/token', methods=['POST'])
+def create_token():
+    em = request.json.get('email', None)
+    pw = request.json.get('password', None)
+    # Change this later => compare with database user details
+    stud = Student.query.filter_by(email=em).first()
+    if (not stud):
+        return {'message': 'Wrong email or password'}, 401
+    if (not stud.password == pw):
+        return {'message': 'Wrong email or password'}, 401
+        
+    # create access token for particular email if login is confirmed
+    access_token = create_access_token(identity=em)
+    response = {'access_token': access_token}
+    return response, 200
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    response = jsonify({"message": "logout successful"})
+    unset_jwt_cookies(response)
+    return response, 200
+
 @app.route('/profile')
+@jwt_required()  # prevent unauthenticated users from making requests to the API
 def my_profile():
     response_body = {
         "name": "Karlos",
@@ -287,7 +339,7 @@ def my_profile():
 def testdb():
     if request.method == "POST":
         # create random instance of Student class
-        new_student = Student(full_name="karl", user_name="karldudley", email="karl@example.com", password="test123")
+        new_student = Student(full_name="harry", user_name="harrykane", email="harry@example.com", password="spurs4ever")
         # create random instance of Club class
         new_club = Club(club_name="science", club_code="999")
 
