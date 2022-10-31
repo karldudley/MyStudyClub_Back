@@ -1,5 +1,3 @@
-from os import access
-from tkinter.messagebox import RETRY
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
 from flask import Flask, request, jsonify, request, json
 from flask_cors import CORS
