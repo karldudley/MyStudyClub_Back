@@ -1,16 +1,11 @@
-<<<<<<< HEAD
 import json
 from os import access
 from tkinter.messagebox import RETRY
-from flask import Flask, request, jsonify
-=======
-from flask import Flask, request, jsonify, request, json
+from flask import Flask, request, jsonify, json
 from flask_cors import CORS
->>>>>>> 77da9e380d6bcee9e61eca6a7a27d13bdbe8b132
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta, timezone
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
-from flask_cors import CORS
 import psycopg2
 from flask_marshmallow import Marshmallow
 
@@ -75,17 +70,13 @@ class Student(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     clubs = db.relationship('Club', secondary=student_club, backref='students')
 
-<<<<<<< HEAD
-    # create a function to return a string when we add something
-=======
     def __init__(self, full_name, user_name, email, password):
         self.full_name = full_name
         self.user_name = user_name
         self.email = email
         self.password = password
 
-    #create a function to return a string when we add something
->>>>>>> 77da9e380d6bcee9e61eca6a7a27d13bdbe8b132
+    # create a function to return a string when we add something
     def __repr__(self):
         return '<Student %r>' % self.id
 
@@ -166,16 +157,12 @@ class Flashcard(db.Model):
     set_id = db.Column(db.Integer, db.ForeignKey(
         'set.id'))  # link flashcard to set
 
-<<<<<<< HEAD
-    # create a function to return a string when we add something
-=======
     def __init__(self, question, answer, set_id):
         self.question = question
         self.answer = answer
         self.set_id = set_id
 
-    #create a function to return a string when we add something
->>>>>>> 77da9e380d6bcee9e61eca6a7a27d13bdbe8b132
+    # create a function to return a string when we add something
     def __repr__(self):
         return '<Flashcard %r>' % self.question[:20]
 
@@ -219,21 +206,21 @@ messages_schema = MessageSchema(many=True)
 @app.route('/')
 def index():
     return ("<h1 style=\"color:#B0E0E6;\">Welcome to the myStudyClub server</h1>"
-    "<h2 style=\"color:#468499;\">The following GET endpoints currently exist:</h2>"
-    "<h3>/students</h3><h3>/students/:id</h3>"
-    "<h3>/clubs</h3><h3>/clubs/:id</h3>"
-    "<h3>/studentclubs</h3><h3>/studentclubs/:id</h3>"
-    "<h3>/sets</h3><h3>/sets/:id</h3>"
-    "<h3>/messages</h3><h3>/messages/:id</h3>"
-    "<h3>/flashcards</h3><h3>/flashcards/:set_id</h3>"
-    "<h2 style=\"color:#468499;\">The following POST endpoints currently exist:</h2>"
-    "<h3>/students</h3>"
-    "<h3>/flashcards</h3>"
-    "<h2 style=\"color:#468499;\">The following PATCH endpoints currently exist:</h2>"
-    "<h3>/flashcards/:id</h3>"
-    "<h2 style=\"color:#468499;\">The following DELETE endpoints currently exist:</h2>"
-    "<h3>/flashcards/:id</h3>"
-    )
+            "<h2 style=\"color:#468499;\">The following GET endpoints currently exist:</h2>"
+            "<h3>/students</h3><h3>/students/:id</h3>"
+            "<h3>/clubs</h3><h3>/clubs/:id</h3>"
+            "<h3>/studentclubs</h3><h3>/studentclubs/:id</h3>"
+            "<h3>/sets</h3><h3>/sets/:id</h3>"
+            "<h3>/messages</h3><h3>/messages/:id</h3>"
+            "<h3>/flashcards</h3><h3>/flashcards/:set_id</h3>"
+            "<h2 style=\"color:#468499;\">The following POST endpoints currently exist:</h2>"
+            "<h3>/students</h3>"
+            "<h3>/flashcards</h3>"
+            "<h2 style=\"color:#468499;\">The following PATCH endpoints currently exist:</h2>"
+            "<h3>/flashcards/:id</h3>"
+            "<h2 style=\"color:#468499;\">The following DELETE endpoints currently exist:</h2>"
+            "<h3>/flashcards/:id</h3>"
+            )
 
 
 @app.route('/studentclubs')
@@ -249,12 +236,8 @@ def studentclub(id):
     rows = cursor.fetchall()
     return rows, 200
 
-<<<<<<< HEAD
 
-@app.route('/students')
-=======
 @app.route('/students', methods=["POST", "GET"])
->>>>>>> 77da9e380d6bcee9e61eca6a7a27d13bdbe8b132
 def students():
     if request.method == "POST":
         full_name = request.json['full_name']
@@ -305,12 +288,8 @@ def set(id):
     res = set_schema.dump(data)
     return res, 200
 
-<<<<<<< HEAD
 
-@app.route('/flashcards')
-=======
 @app.route('/flashcards', methods=["GET", "POST"])
->>>>>>> 77da9e380d6bcee9e61eca6a7a27d13bdbe8b132
 def flashcards():
     if request.method == "POST":
         question = request.json['question']
@@ -325,24 +304,12 @@ def flashcards():
         res = flashcards_schema.dump(data)
         return jsonify(res), 200
 
-<<<<<<< HEAD
-# @app.route('/flashcards/<id>')
-# def flashcard(id):
-#     data = Flashcard.query.get(id)
-#     res = flashcard_schema.dump(data)
-#     return res, 200
 
-
-@app.route('/flashcards/<set_id>')
-def flashcard_set(set_id):
-    data = Flashcard.query.filter_by(set_id=set_id)
-    res = flashcards_schema.dump(data)
-    return jsonify(res), 200
-=======
 @app.route('/flashcards/<id>', methods=["GET", "PATCH", "DELETE"])
 def update_flashcard(id):
     if request.method == "PATCH":
-        db.session.query(Flashcard).filter(Flashcard.id == id).update(request.json)
+        db.session.query(Flashcard).filter(
+            Flashcard.id == id).update(request.json)
         db.session.commit()
         return request.json, 200
     elif request.method == "DELETE":
@@ -353,7 +320,6 @@ def update_flashcard(id):
         data = Flashcard.query.filter_by(set_id=id)
         res = flashcards_schema.dump(data)
         return jsonify(res), 200
->>>>>>> 77da9e380d6bcee9e61eca6a7a27d13bdbe8b132
 
 
 @app.route('/messages')
@@ -396,7 +362,7 @@ def create_token():
     email = request.json.get('email', None)
     password = request.json.get('password', None)
     # Change this later => compare with database user details
-    if email != 'test' or password != 'test':
+    if email != db.query.get('email') or password != db.query.get('password')
         # unauthorized Error
         return {'message': 'Wrong email or password'}, 401
     # create access token for particular email if login is confirmed
