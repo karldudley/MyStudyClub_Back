@@ -362,7 +362,7 @@ def create_token():
     email = request.json.get('email', None)
     password = request.json.get('password', None)
     # Change this later => compare with database user details
-    if email != db.query.get('email') or password != db.query.get('password')
+    if email != db.query.get('email') or password != db.query.get('password'):
         # unauthorized Error
         return {'message': 'Wrong email or password'}, 401
     # create access token for particular email if login is confirmed
