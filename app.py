@@ -9,7 +9,6 @@ from flask_marshmallow import Marshmallow
 app = Flask(__name__)
 cors = CORS(app)
 
-
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///student.db' # flask sqlite db
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://knonbgucbylgdb:91620f58ea09dd7d85b9d24e4b7a26372ea08ee1bede0e8e3bbb3bfc139ec5fc@ec2-44-209-24-62.compute-1.amazonaws.com:5432/d57frogopfmo03' # heroku postgres db
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -68,7 +67,7 @@ class Student(db.Model):
 
     #create a function to return a string when we add something
     def __repr__(self):
-        return '<Student %r>' % self.id
+        return '<Student %r>' % self.id     # pragma: no cover
 
 class StudentSchema(ma.Schema):
     class Meta:
@@ -86,9 +85,13 @@ class Club(db.Model):
     sets = db.relationship('Set', backref='club')  # setup foreign key for sets
     messages = db.relationship('Message', backref='club')  # setup foreign key for messages
 
+    def __init__(self, club_name, club_code):
+        self.club_name = club_name
+        self.club_code = club_code
+
     #create a function to return a string when we add something
     def __repr__(self):
-        return '<Club %r>' % self.club_name
+        return '<Club %r>' % self.club_name     # pragma: no cover
 
 class ClubSchema(ma.Schema):
     class Meta:
@@ -109,7 +112,7 @@ class Set(db.Model):
 
     #create a function to return a string when we add something
     def __repr__(self):
-        return '<Set %r>' % self.set_name
+        return '<Set %r>' % self.set_name       # pragma: no cover
 
 class SetSchema(ma.Schema):
     class Meta:
@@ -133,7 +136,7 @@ class Flashcard(db.Model):
 
     #create a function to return a string when we add something
     def __repr__(self):
-        return '<Flashcard %r>' % self.question[:20]
+        return '<Flashcard %r>' % self.question[:20]        # pragma: no cover
 
 class FlashcardSchema(ma.Schema):
     class Meta:
@@ -152,7 +155,7 @@ class Message(db.Model):
 
     #create a function to return a string when we add something
     def __repr__(self):
-        return '<Flashcard %r>' % self.content[:20]
+        return '<Flashcard %r>' % self.content[:20]         # pragma: no cover
 
 class MessageSchema(ma.Schema):
     class Meta:
@@ -187,9 +190,13 @@ def studentclubs():
 
 @app.route('/studentclubs/<id>')
 def studentclub(id):
-    cursor.execute(f"SELECT * FROM student_club WHERE student_id={id};")
-    rows = cursor.fetchall()
-    return rows, 200
+    # cursor.execute(f"SELECT * FROM student_club WHERE student_id={id};")
+    # rows = cursor.fetchall()
+    # return clubs, 200
+    student = Student.query.get(id)
+    clubs = student.clubs
+    res = clubs_schema.dump(clubs)
+    return jsonify(res), 200
 
 @app.route('/students', methods=["POST", "GET"])
 def students():
@@ -213,17 +220,30 @@ def student(id):
     res = student_schema.dump(data)
     return res, 200
 
-@app.route('/clubs')
+@app.route('/clubs', methods=["POST", "GET"])
 def clubs():
-    data = Club.query.all()
-    res = clubs_schema.dump(data)
-    return jsonify(res), 200
+    if request.method == "POST":
+        club_name = request.json['title']
+        club_code = request.json['code']
+        new_club = Club(club_name, club_code)
+        db.session.add(new_club)
+        db.session.commit()
+        return club_schema.jsonify(new_club), 201
+    else:
+        data = Club.query.all()
+        res = clubs_schema.dump(data)
+        return jsonify(res), 200
 
-@app.route('/clubs/<id>')
+@app.route('/clubs/<id>', methods=["GET", "DELETE"])
 def club(id):
-    data = Club.query.get(id)
-    res = club_schema.dump(data)
-    return res, 200
+    if request.method == "DELETE":
+        db.session.query(Club).filter(Club.id == id).delete()
+        db.session.commit()
+        return f"Successfully deleted club with the id {id}."
+    else:
+        data = Club.query.get(id)
+        res = club_schema.dump(data)
+        return res, 200
 
 @app.route('/sets')
 def sets():
@@ -233,9 +253,12 @@ def sets():
 
 @app.route('/sets/<id>')
 def set(id):
-    data = Set.query.get(id)
-    res = set_schema.dump(data)
-    return res, 200
+    # data = Set.query.get(id)
+    # res = set_schema.dump(data)
+    # return res, 200
+    data = Set.query.filter_by(club_id=id)
+    res = sets_schema.dump(data)
+    return jsonify(res), 200
 
 @app.route('/flashcards', methods=["GET", "POST"])
 def flashcards():
@@ -324,7 +347,7 @@ def logout():
     return response, 200
 
 @app.route('/profile')
-@jwt_required()  # prevent unauthenticated users from making requests to the API
+# @jwt_required()  # prevent unauthenticated users from making requests to the API
 def my_profile():
     response_body = {
         "name": "Karlos",
@@ -350,7 +373,7 @@ def testdb():
             # student_table = Student.query.all()
             # return student_table
         except:
-            return "There was an error adding to the db"
+            return "There was an error adding to the db"            # pragma: no cover
     else:
         # below is just for testing purposes
         students = Student.query.order_by(Student.created_at)
@@ -368,7 +391,7 @@ def testdb():
             print(x.content)
         for x in flashcards:
             print(x.question, x.answer)
-        return "hey"
+        return "hey"        # pragma: no cover
     
 
 if __name__ == '__main__':
