@@ -253,9 +253,12 @@ def sets():
 
 @app.route('/sets/<id>')
 def set(id):
-    data = Set.query.get(id)
-    res = set_schema.dump(data)
-    return res, 200
+    # data = Set.query.get(id)
+    # res = set_schema.dump(data)
+    # return res, 200
+    data = Set.query.filter_by(club_id=id)
+    res = sets_schema.dump(data)
+    return jsonify(res), 200
 
 @app.route('/flashcards', methods=["GET", "POST"])
 def flashcards():
