@@ -216,11 +216,18 @@ def students():
         res = students_schema.dump(data)
         return jsonify(res), 200
 
-@app.route('/students/<id>')
+@app.route('/students/<id>', methods=["PATCH", "GET"])
 def student(id):
-    data = Student.query.get(id)
-    res = student_schema.dump(data)
-    return res, 200
+    if request.method == "PATCH":
+        club_code = request.json['club_code']
+        existing_club = Club.query.get(club_code)
+        student = Student.query.get(id)
+        student.clubs.append(existing_club)
+        db.session.commit()
+    else:
+        data = Student.query.get(id)
+        res = student_schema.dump(data)
+        return res, 200
 
 @app.route('/clubs', methods=["POST", "GET"])
 def clubs():
