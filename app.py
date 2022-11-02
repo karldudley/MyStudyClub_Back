@@ -106,6 +106,8 @@ class Set(db.Model):
     set_name = db.Column(db.String(50), nullable=False)
     private = db.Column(db.Boolean, nullable=False)
     likes = db.Column(db.Integer, nullable=False)
+    # best_time = db.Column(db.Integer, nullable=False)
+    # top_user = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     club_id = db.Column(db.Integer, db.ForeignKey('club.id')) # link set to club
     flashcards = db.relationship('Flashcard', backref='set')  # setup foreign key for flashcards
@@ -253,9 +255,6 @@ def sets():
 
 @app.route('/sets/<id>')
 def set(id):
-    # data = Set.query.get(id)
-    # res = set_schema.dump(data)
-    # return res, 200
     data = Set.query.filter_by(club_id=id)
     res = sets_schema.dump(data)
     return jsonify(res), 200
@@ -336,7 +335,7 @@ def create_token():
         
     # create access token for particular email if login is confirmed
     access_token = create_access_token(identity=em)
-    response = {'access_token': access_token}
+    response = {'access_token': access_token, 'student_id': stud.id}
     return response, 200
 
 
