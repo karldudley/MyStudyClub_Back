@@ -224,6 +224,7 @@ def student(id):
         student = Student.query.get(id)
         student.clubs.append(existing_club)
         db.session.commit()
+        return "Student successfully added to club"
     else:
         data = Student.query.get(id)
         res = student_schema.dump(data)
