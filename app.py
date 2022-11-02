@@ -228,6 +228,9 @@ def clubs():
         club_name = request.json['title']
         club_code = request.json['code']
         new_club = Club(club_name, club_code)
+        student_id = request.json['student_id']
+        student = Student.query.get(student_id)
+        student.clubs.append(new_club)
         db.session.add(new_club)
         db.session.commit()
         return club_schema.jsonify(new_club), 201
