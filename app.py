@@ -354,7 +354,7 @@ def create_token():
         
     # create access token for particular email if login is confirmed
     access_token = create_access_token(identity=em)
-    response = {'access_token': access_token, 'student_id': stud.id}
+    response = {'access_token': access_token, 'student_id': stud.id, 'user_name': stud.user_name}
     return response, 200
 
 
