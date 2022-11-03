@@ -83,7 +83,7 @@ class Club(db.Model):
     club_code = db.Column(db.String(20), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     sets = db.relationship('Set', backref='club')  # setup foreign key for sets
-    messages = db.relationship('Message', backref='club', cascade="delete, merge, save-update")  # setup foreign key for messages
+    messages = db.relationship('Message', backref='club')  # setup foreign key for messages
 
     def __init__(self, club_name, club_code):
         self.club_name = club_name
@@ -192,6 +192,9 @@ def studentclubs():
 
 @app.route('/studentclubs/<id>')
 def studentclub(id):
+    # cursor.execute(f"SELECT * FROM student_club WHERE student_id={id};")
+    # rows = cursor.fetchall()
+    # return clubs, 200
     student = Student.query.get(id)
     clubs = student.clubs
     res = clubs_schema.dump(clubs)
@@ -217,7 +220,7 @@ def students():
 def student(id):
     if request.method == "PATCH":
         club_code = request.json['club_code']
-        existing_club = Club.query.get(club_code)
+        existing_club = Club.query.filter_by(club_code=club_code).first()
         student = Student.query.get(id)
         student.clubs.append(existing_club)
         db.session.commit()
