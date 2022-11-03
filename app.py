@@ -83,7 +83,7 @@ class Club(db.Model):
     club_code = db.Column(db.String(20), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     sets = db.relationship('Set', backref='club')  # setup foreign key for sets
-    messages = db.relationship('Message', backref='club')  # setup foreign key for messages
+    messages = db.relationship('Message', backref='club', cascade="delete, merge, save-update")  # setup foreign key for messages
 
     def __init__(self, club_name, club_code):
         self.club_name = club_name
