@@ -112,6 +112,12 @@ class Set(db.Model):
     club_id = db.Column(db.Integer, db.ForeignKey('club.id')) # link set to club
     flashcards = db.relationship('Flashcard', backref='set')  # setup foreign key for flashcards
 
+    def __init__(self, set_name, private, likes, club_id):
+        self.set_name = set_name
+        self.private = private
+        self.likes = likes
+        self.club_id = club_id
+
     #create a function to return a string when we add something
     def __repr__(self):
         return '<Set %r>' % self.set_name       # pragma: no cover
@@ -256,21 +262,24 @@ def club(id):
         student.clubs.remove(existing_club)
         db.session.commit()
         return "Student successfully removed from club"
-
-
-        # db.session.query(Club).filter(Club.id == id).delete()
-        # db.session.commit()
-        # return f"Successfully deleted club with the id {id}."
     else:
         data = Club.query.get(id)
         res = club_schema.dump(data)
         return res, 200
 
-@app.route('/sets')
+@app.route('/sets', methods=["POST", "GET"])
 def sets():
-    data = Set.query.all()
-    res = sets_schema.dump(data)
-    return jsonify(res), 200
+    if request.method == "POST":
+        set_name = request.json['name']
+        club_id = request.json['club_id']
+        new_set = Set(set_name, False, 0, club_id)
+        db.session.add(new_set)
+        db.session.commit()
+        return set_schema.jsonify(new_set), 201
+    else:
+        data = Set.query.all()
+        res = sets_schema.dump(data)
+        return jsonify(res), 200
 
 @app.route('/sets/<id>')
 def set(id):
