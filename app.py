@@ -247,12 +247,20 @@ def clubs():
         res = clubs_schema.dump(data)
         return jsonify(res), 200
 
-@app.route('/clubs/<id>', methods=["GET", "DELETE"])
+@app.route('/clubs/<id>', methods=["GET", "PATCH"])
 def club(id):
-    if request.method == "DELETE":
-        db.session.query(Club).filter(Club.id == id).delete()
+    if request.method == "PATCH":
+        student_id = request.json['student_id']
+        existing_club = Club.query.filter_by(id=id).first()
+        student = Student.query.get(student_id)
+        student.clubs.remove(existing_club)
         db.session.commit()
-        return f"Successfully deleted club with the id {id}."
+        return "Student successfully removed from club"
+
+
+        # db.session.query(Club).filter(Club.id == id).delete()
+        # db.session.commit()
+        # return f"Successfully deleted club with the id {id}."
     else:
         data = Club.query.get(id)
         res = club_schema.dump(data)
