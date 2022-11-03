@@ -192,9 +192,6 @@ def studentclubs():
 
 @app.route('/studentclubs/<id>')
 def studentclub(id):
-    # cursor.execute(f"SELECT * FROM student_club WHERE student_id={id};")
-    # rows = cursor.fetchall()
-    # return clubs, 200
     student = Student.query.get(id)
     clubs = student.clubs
     res = clubs_schema.dump(clubs)
